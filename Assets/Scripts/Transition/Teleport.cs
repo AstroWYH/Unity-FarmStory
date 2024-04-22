@@ -4,9 +4,10 @@ using UnityEngine;
 
 namespace MFarm.Transition
 {
-   public class Teleport : MonoBehaviour
-   {
-    public string sceneToGo;
+    // note: 传送类1，用于放置在场景中，相当于触发盒子的作用
+    public class Teleport : MonoBehaviour
+    {
+        public string sceneToGo;
         public Vector3 positionToGo;//坐标
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -16,5 +17,5 @@ namespace MFarm.Transition
                 EventHandler.CallTransitionEvent(sceneToGo, positionToGo);
             }
         }
-   }
+    }
 }

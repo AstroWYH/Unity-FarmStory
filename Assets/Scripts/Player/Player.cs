@@ -104,13 +104,13 @@ public class Player : MonoBehaviour, ISaveable
     private void OnMouseClickedEvent(Vector3 mouseWorldPos, ItemDetails itemDetails)
     {
         if (useTool)
-        return;
+            return;
 
         //TODO:执行动画
         if (itemDetails.itemType != ItemType.Seed && itemDetails.itemType != ItemType.Commodity && itemDetails.itemType != ItemType.Furniture)
         {
             mouseX = mouseWorldPos.x - transform.position.x;
-            mouseY = mouseWorldPos.y - (transform.position.y+0.85f);
+            mouseY = mouseWorldPos.y - (transform.position.y + 0.85f);
 
             if (Mathf.Abs(mouseX) > Mathf.Abs(mouseY))
                 mouseY = 0;
@@ -124,25 +124,25 @@ public class Player : MonoBehaviour, ISaveable
         }
     }
 
-        private IEnumerator UseToolRoutine(Vector3 mouseWorldPos, ItemDetails itemDetails)
+    private IEnumerator UseToolRoutine(Vector3 mouseWorldPos, ItemDetails itemDetails)
+    {
+        useTool = true;
+        inputDisable = true;
+        yield return null;
+        foreach (var anim in animators)
         {
-            useTool = true;
-            inputDisable = true;
-            yield return null;
-            foreach (var anim in animators)
-            {
-                anim.SetTrigger("useTool");
-                //人物的面朝方向
-                anim.SetFloat("InputX", mouseX);
-                anim.SetFloat("InputY", mouseY);
-            }
-            yield return new WaitForSeconds(0.45f);
-            EventHandler.CallExecuteActionAfterAnimation(mouseWorldPos, itemDetails);
-            yield return new WaitForSeconds(0.25f);
-            //等待动画结束
-            useTool = false;
-            inputDisable = false;
+            anim.SetTrigger("useTool");
+            //人物的面朝方向
+            anim.SetFloat("InputX", mouseX);
+            anim.SetFloat("InputY", mouseY);
         }
+        yield return new WaitForSeconds(0.45f);
+        EventHandler.CallExecuteActionAfterAnimation(mouseWorldPos, itemDetails);
+        yield return new WaitForSeconds(0.25f);
+        //等待动画结束
+        useTool = false;
+        inputDisable = false;
+    }
 
     private void OnMoveToPosition(Vector3 targetPosition)
     {
@@ -166,19 +166,19 @@ public class Player : MonoBehaviour, ISaveable
         // if (intputX == 0)禁止斜方向移动
         inputY = Input.GetAxisRaw("Vertical");
 
-        if (inputX != 0 &&inputY != 0)
+        if (inputX != 0 && inputY != 0)
         {
             inputX = inputX * 0.5f;
             inputY = inputY * 0.5f;
         }
 
         //走路状态速度
-        if (Input.GetKey(KeyCode.LeftShift))        
-        {       
-            inputX = inputX * 0.5f;            
-            inputY = inputY * 0.5f;        
-        }        
-        
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            inputX = inputX * 0.5f;
+            inputY = inputY * 0.5f;
+        }
+
         movementInput = new Vector2(inputX, inputY);
 
         isMoving = movementInput != Vector2.zero;

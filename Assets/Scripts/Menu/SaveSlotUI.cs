@@ -4,15 +4,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using MFarm.Save;
 
-// note: 存档类3，MVC的V，和界面直接关联；在控件上注册了SaveLoadManager的LoadGameData()，但没注册Save()相关
+// note: 存档类3；UI类3；MVC的V，和界面直接关联；在控件上注册了SaveLoadManager的LoadGameData()，但没注册Save()相关
 public class SaveSlotUI : MonoBehaviour
 {
     public Text dataTime, dataScene;
     private Button currentButton;
     private DataSlot currentData;
-    
+
     private int Index => transform.GetSiblingIndex();
-    
+
     private void Awake()
     {
         currentButton = GetComponent<Button>();
@@ -43,7 +43,7 @@ public class SaveSlotUI : MonoBehaviour
             dataScene.text = "梦还没开始";
         }
     }
-    
+
     private void LoadGameData()
     {
         // note: 读已有存档

@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 
 namespace MFarm.Transition
 {
+    // note: 传送类2；1）监听Teleport触发盒子的事件，负责过渡渐变的功能；会播老场景卸载前、新场景加载后等委托
+    // note: 2）负责新游戏启动、Load读档加载、游戏结束退出的过渡渐变，会播老场景卸载前、新场景加载后等委托
+    // note: 3）老场景卸载前、新场景加载后，这2个协议很重要，很多模块都会注册
     public class TransitionManager : Singleton<TransitionManager>, ISaveable
     {
         [SceneName]
@@ -19,7 +22,8 @@ namespace MFarm.Transition
         {
             base.Awake();
             Screen.SetResolution(1920, 1080, FullScreenMode.Windowed, 0);
-           
+
+            // note: 为什么是这个类来加载UI？
             SceneManager.LoadScene("UI", LoadSceneMode.Additive);
         }
 
@@ -47,7 +51,6 @@ namespace MFarm.Transition
             StartCoroutine(LoadSaveDataScene(startSceneName));
         }
 
-
         private void Start()
         {
             ISaveable saveable = this;
@@ -55,7 +58,6 @@ namespace MFarm.Transition
 
             fadeCanvasGroup = FindObjectOfType<CanvasGroup>();
         }
-
 
         private void OnTransitionEvent(string sceneToGo, Vector3 positionToGo)
         {
@@ -72,14 +74,18 @@ namespace MFarm.Transition
         private IEnumerator Transition(string sceneName, Vector3 targetPosition)
         {
             EventHandler.CallBeforeSceneUnloadEvent();
+            // note: 逐渐变黑；暂停，直到Fade()执行完再继续
             yield return Fade(1);
 
+            // note: 暂停，直到UnloadSceneAsync卸载完再继续
             yield return SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
 
             yield return LoadSceneSetActive(sceneName);
             //移动人物坐标
+            // note: 只有Player注册；看起来这里可以优化，这个委托可能不需要，可以直接用CallAfterSceneLoadedEvent()一起来实现
             EventHandler.CallMoveToPosition(targetPosition);
             EventHandler.CallAfterSceneLoadedEvent();
+            // note: 逐渐变亮；暂停，直到Fade()执行完再继续
             yield return Fade(0);
         }
 
@@ -121,11 +127,11 @@ namespace MFarm.Transition
             isFade = false;
         }
 
-
         private IEnumerator LoadSaveDataScene(string sceneName)
         {
             yield return Fade(1f);
 
+            // note: 1)走这个if是在游戏过程中，加载存档调用Load，然后调RestoreData；2)不走则是新开游戏
             if (SceneManager.GetActiveScene().name != "PersistentScene")    //在游戏过程中 加载另外游戏进度
             {
                 EventHandler.CallBeforeSceneUnloadEvent();
@@ -137,7 +143,6 @@ namespace MFarm.Transition
             yield return Fade(0);
         }
 
-
         private IEnumerator UnloadScene()
         {
             EventHandler.CallBeforeSceneUnloadEvent();
@@ -145,8 +150,6 @@ namespace MFarm.Transition
             yield return SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene().buildIndex);
             yield return Fade(0);
         }
-
-
 
         public GameSaveData GenerateSaveData()
         {

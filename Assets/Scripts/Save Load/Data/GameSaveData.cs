@@ -5,6 +5,7 @@ using UnityEngine;
 namespace MFarm.Save
 {
     [System.Serializable]
+    // note: 存档类5；MVC的M，Json存档数据的内存表现
     public class GameSaveData
     {
         public string dataSceneName;

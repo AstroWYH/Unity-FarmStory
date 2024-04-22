@@ -1,4 +1,6 @@
 using UnityEngine;
+
+// note: 存档类6；提供唯一资产ID；编辑器模式下也执行
 [ExecuteAlways]
 public class DataGUID : MonoBehaviour
 {

@@ -4,6 +4,7 @@ using UnityEngine;
 using MFarm.Transition;
 namespace MFarm.Save
 {
+    // note: 存档类4；MVC的M，Json存档数据的内存表现
     public class DataSlot
     {
         /// <summary>

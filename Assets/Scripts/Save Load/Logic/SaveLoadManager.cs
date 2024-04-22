@@ -52,7 +52,7 @@ namespace MFarm.Save
         }
         private void OnStartNewGameEvent(int index)
         {
-            // note: 新游戏赋值
+            // note: 新游戏赋值；index是存档的索引[1、2、3]
             currentDataIndex = index;
         }
 
