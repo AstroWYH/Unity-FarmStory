@@ -17,7 +17,6 @@ public class UIManager : MonoBehaviour
     public GameObject pausePanel;
     public Slider volumeSlider;
 
-
     private void Awake()
     {
         settingsBtn.onClick.AddListener(TogglePausePanel);

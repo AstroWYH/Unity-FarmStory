@@ -5,8 +5,11 @@ using MFarm.Dialogue;
 using UnityEngine;
 using UnityEngine.UI;
 
+// note: Dialogue类1；UI类，接收DialogueController和DialogueBehavior播来的事件，控制对话内容和显隐
+// note: 附着在DialogueCanvas上
 public class DialogueUI : MonoBehaviour
 {
+    // note: 对话框的整个Panel，控制显隐
     public GameObject dialogueBox;
     public Text dailogueText;
     public Image faceRight, faceLeft;
@@ -72,6 +75,7 @@ public class DialogueUI : MonoBehaviour
 
             piece.isDone = true;
 
+            // note: 如果这句说完了，并且需要暂停，就会弹继续按钮
             if (piece.hasToPause && piece.isDone)
                 continueBox.SetActive(true);
         }
