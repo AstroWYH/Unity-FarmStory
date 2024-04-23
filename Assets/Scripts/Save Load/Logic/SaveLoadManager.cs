@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MFarm.Save
 {
-    // note: 存档类2，MVC的C，业务逻辑（存档）管理类，实现了Save(), Load(), Register()等一系列方法
+    // note: 存档类2；MVC的C，业务逻辑（存档）管理类；序列化数据<->内存表现；提供了Save(), Load(), Register()等一系列方法
     public class SaveLoadManager : Singleton<SaveLoadManager>
     {
         // note: 全部需要注册的模块

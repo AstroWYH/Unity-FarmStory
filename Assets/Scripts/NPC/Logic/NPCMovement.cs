@@ -6,6 +6,7 @@ using MFarm.Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+// note: NPC类2；挂在每个NPC身上；
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
 public class NPCMovement : MonoBehaviour, ISaveable
@@ -478,5 +479,5 @@ public class NPCMovement : MonoBehaviour, ISaveable
         this.interactable = saveData.interactable;
         this.currentSeason = (Season)saveData.timeDict["currentSeason"];
     }
-    
+
 }

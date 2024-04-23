@@ -103,6 +103,7 @@ public class TileDetails
 [System.Serializable]
 public class NPCPosition
 {
+    // note: 这个操作可以学一下的，直接把场景中NPC的transform存进来，就可以得到这个NPC的其他组件了
     public Transform npc;
     public string startScene;
     public Vector3 position;
