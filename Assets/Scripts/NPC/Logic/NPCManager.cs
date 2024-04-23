@@ -6,13 +6,13 @@ using UnityEngine;
 // note: 2）提供编辑器可编辑器的NPC位置信息，去初始化NPCMovement
 public class NPCManager : Singleton<NPCManager>
 {
-    // note: 所有npc的线路，比如有3个npc有3条路，存盘
+    // note: Field<->Home, Field<->Stall, Field<->Start共6条跨地图线路，每条包含2个具体路径ScenePath
     // note: 序列化的数据，可直接在编辑器写好，类似Json存盘
     public SceneRouteDataList_SO sceneRouteDate;
     // note: 3个npc的初始位置
     public List<NPCPosition> npcPositionList;
 
-    // note: 所有npc的线路，比如有3个npc有3条路，内存表现
+    // note: Field<->Home, Field<->Stall, Field<->Start共6条跨地图线路，每条包含2个具体路径ScenePath；内存表现
     private Dictionary<string, SceneRoute> sceneRouteDict = new Dictionary<string, SceneRoute>();
 
     protected override void Awake()

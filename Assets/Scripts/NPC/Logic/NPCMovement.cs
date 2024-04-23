@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(Animator))]
 public class NPCMovement : MonoBehaviour, ISaveable
 {
+    // note: 序列化NPC日程
     public ScheduleDataList_SO scheduleData;
     private SortedSet<ScheduleDetails> scheduleSet;
     private ScheduleDetails currentSchedule;
@@ -23,6 +24,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
     private Vector3Int nextGridPosition;
     private Vector3 nextWorldPosition;
 
+    // note: 编辑器NPC身上没找到，也无其他引用，暂作用不明
     public string StartScene { set => currentScene = value; }
 
     [Header("移动属性")]
@@ -38,7 +40,9 @@ public class NPCMovement : MonoBehaviour, ISaveable
     private BoxCollider2D coll;
     private Animator anim;
     private Grid gird;
+    // note: 
     private Stack<MovementStep> movementSteps;
+    // note: 
     private Coroutine npcMoveRoutine;
 
     private bool isInitialised;
@@ -52,8 +56,10 @@ public class NPCMovement : MonoBehaviour, ISaveable
     private bool canPlayStopAnimaiton;
     private AnimationClip stopAnimationClip;
     public AnimationClip blankAnimationClip;
+    // note: 
     private AnimatorOverrideController animOverride;
 
+    // note: 
     private TimeSpan GameTime => TimeManager.Instance.GameTime;
 
     public string GUID => GetComponent<DataGUID>().guid;
@@ -70,6 +76,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
         anim.runtimeAnimatorController = animOverride;
         scheduleSet = new SortedSet<ScheduleDetails>();
 
+        // note: 序列化日程数据内存化
         foreach (var schedule in scheduleData.scheduleList)
         {
             scheduleSet.Add(schedule);
@@ -131,6 +138,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
 
     private void OnGameMinuteEvent(int minute, int hour, int day, Season season)
     {
+        // note: 避免hour和minute分开判断麻烦，所以写在一起
         int time = (hour * 100) + minute;
         currentSeason = season;
 
@@ -143,10 +151,12 @@ public class NPCMovement : MonoBehaviour, ISaveable
                     continue;
                 if (schedule.season != season)
                     continue;
+                // note: NPC的活匹配上了；初步看起来，NPC的活就是在指定时间走到指定位置，然后做个动作
                 matchSchedule = schedule;
             }
             else if (schedule.Time > time)
             {
+                // note: 这个活的时间还没到，继续看下个
                 break;
             }
         }
@@ -275,6 +285,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
     /// <param name="schedule"></param>
     public void BuildPath(ScheduleDetails schedule)
     {
+        // note: 更新当前的Schedule，NPC准备干活去（走路）
         movementSteps.Clear();
         currentSchedule = schedule;
         targetScene = schedule.targetScene;
@@ -282,11 +293,12 @@ public class NPCMovement : MonoBehaviour, ISaveable
         stopAnimationClip = schedule.clipAtStop;
         this.interactable = schedule.interactable;
 
+        // note: 原地图寻路
         if (schedule.targetScene == currentScene)
         {
             AStar.Instance.BuildPath(schedule.targetScene, (Vector2Int)currentGridPosition, schedule.targetGridPosition, movementSteps);
         }
-        else if (schedule.targetScene != currentScene)
+        else if (schedule.targetScene != currentScene) // note: 跨地图寻路
         {
             //这个东西得加上,从哪来去到哪
             SceneRoute sceneRoute = NPCManager.Instance.GetSceneRoute(currentScene, schedule.targetScene);
@@ -300,6 +312,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
 
                     if (path.fromGridCell.x >= Settings.maxGridSize)
                     {
+                        // note: 第二段路，从黑暗走向目标
                         fromPos = (Vector2Int)currentGridPosition;
                     }
                     else
@@ -309,6 +322,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
 
                     if (path.gotoGridCell.x >= Settings.maxGridSize)
                     {
+                        // note: 第一段路，从出发点走向黑暗
                         gotoPos = schedule.targetGridPosition;
                     }
                     else
@@ -316,6 +330,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
                         gotoPos = path.gotoGridCell;
                     }
 
+                    // note: 会寻路2次
                     AStar.Instance.BuildPath(path.sceneName, fromPos, gotoPos, movementSteps);
                 }
             }

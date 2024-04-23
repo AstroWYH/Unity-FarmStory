@@ -177,7 +177,7 @@ public class TimeManager : Singleton<TimeManager>, ISaveable
             EventHandler.CallLightShiftChangeEvent(gameSeason, GetCurrentLightShift(), timeDifference);
         }
 
-        // Debug.Log("Second: " + gameSecond + " Minute: " + gameMinute);
+        Debug.Log(gameYear + "-" + gameSeason + "-" + gameMonth + "-" + gameDay + " " + gameHour + ":" + gameMinute + ":" + gameSecond);
     }
 
     /// <summary>
