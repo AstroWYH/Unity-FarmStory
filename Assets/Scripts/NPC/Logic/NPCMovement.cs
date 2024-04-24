@@ -14,9 +14,11 @@ public class NPCMovement : MonoBehaviour, ISaveable
     // note: 序列化NPC日程
     public ScheduleDataList_SO scheduleData;
     private SortedSet<ScheduleDetails> scheduleSet;
+    // note: 虽然但是，这个currentSchedule纯没起作用
     private ScheduleDetails currentSchedule;
 
     //临时存储信息
+    // note: 编辑器赋予
     public string currentScene;
     private string targetScene;
     private Vector3Int currentGridPosition;
@@ -443,6 +445,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
         spriteRenderer.enabled = true;
         coll.enabled = true;
 
+        // note: 盲猜这个是NPC阴影
         transform.GetChild(0).gameObject.SetActive(true);
     }
 
