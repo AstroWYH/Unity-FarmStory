@@ -18,11 +18,14 @@ public class NPCMovement : MonoBehaviour, ISaveable
     private ScheduleDetails currentSchedule;
 
     //临时存储信息
-    // note: 编辑器赋予
+    // note: 编辑器赋予，这2个主要和Astar寻路相关
     public string currentScene;
     private string targetScene;
+    // note: 这2个也主要和Astar寻路相关，和网格有关
     private Vector3Int currentGridPosition;
+    // note: 从编辑器npc身上来的，girl1 girl2 老人分别可能有1-2个schedule，这是目的地
     private Vector3Int tragetGridPosition;
+    // note: 看起来只是NPC要走的下一个格子，但还没搞清楚girdpos和worldpos的明显区别，debug看好像有点像
     private Vector3Int nextGridPosition;
     private Vector3 nextWorldPosition;
 
@@ -33,23 +36,30 @@ public class NPCMovement : MonoBehaviour, ISaveable
     public float normalSpeed = 2f;
     private float minSpeed = 1;
     private float maxSpeed = 3;
+    // note: 下一步和当前步的方向；并会设到动画里，决定npc的朝向动画
     private Vector2 dir;
+    // note: 没走到终点tragetGridPosition，就为true
     public bool isMoving;
 
     //Components
+    // note: 控制移动
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private BoxCollider2D coll;
+    // note: 通过一些属性值，设置动画表现；和animOverride关联，把活细分给animOverride
     private Animator anim;
+    // note: 可能是找的persistent scene里的grid，未启用，test用；主要用来坐标转换
     private Grid gird;
-    // note: 
+    // note: npc具体要走的步子
     private Stack<MovementStep> movementSteps;
-    // note: 
+    // note: 可能不用这个，也行；比如就返回那个IExxx
     private Coroutine npcMoveRoutine;
 
     private bool isInitialised;
+    // note: 走一格的过程中为true
     private bool npcMove;
     private bool sceneLoaded;
+    // note: 编辑器设的，在对话那有用
     public bool interactable;
     public bool isFirstLoad;
     private Season currentSeason;
@@ -59,10 +69,10 @@ public class NPCMovement : MonoBehaviour, ISaveable
     // note: 目前看起来没起作用
     private AnimationClip stopAnimationClip;
     public AnimationClip blankAnimationClip;
-    // note: 
+    // note: 没特别看懂，从编辑器npc的animator看是细分anim，但又好像不是；从代码看是给blank和stop替换动画，但似乎没起作用
     private AnimatorOverrideController animOverride;
 
-    // note: 
+    // note: 把时分合在一起，方便
     private TimeSpan GameTime => TimeManager.Instance.GameTime;
 
     public string GUID => GetComponent<DataGUID>().guid;
@@ -139,6 +149,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
         isFirstLoad = true;
     }
 
+    // note: 到点NPC就干活，走路
     private void OnGameMinuteEvent(int minute, int hour, int day, Season season)
     {
         // note: 避免hour和minute分开判断麻烦，所以写在一起
@@ -185,6 +196,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
 
         sceneLoaded = true;
 
+        // note: 不是第一次加载游戏，才走？
         if (!isFirstLoad)
         {
             currentGridPosition = gird.WorldToCell(transform.position);
@@ -202,7 +214,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
             SetInactiveInScene();
     }
 
-
+    // note: 目前没看到太大作用，后面再看
     private void InitNPC()
     {
         targetScene = currentScene;
@@ -219,11 +231,12 @@ public class NPCMovement : MonoBehaviour, ISaveable
     /// <summary>
     /// 主要移动方法
     /// </summary>
+    // note: 具体每帧检测是否需要npc移动
     private void Movement()
     {
         if (!npcMove) // note: 如果npc在移动，就什么都不做
         {
-            if (movementSteps.Count > 0) // note: 如果有步子stack可以动，就移动
+            if (movementSteps.Count > 0) // note: 如果有步子stack可以动，就移动；一个步子step是一格
             {
                 MovementStep step = movementSteps.Pop();
 
@@ -238,6 +251,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
             }
             else if (!isMoving && canPlayStopAnimaiton) // note: 如果没步子stack可以动，就停下来跳舞
             {
+                // note: 看起来只做了一个强制面向镜头的动作；并没有停止动画
                 StartCoroutine(SetStopAnimation());
             }
         }
@@ -249,6 +263,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
         npcMoveRoutine = StartCoroutine(MoveRoutine(gridPos, stepTime));
     }
 
+    // note: 一次就移一个格子
     private IEnumerator MoveRoutine(Vector3Int gridPos, TimeSpan stepTime)
     {
         npcMove = true;
@@ -284,17 +299,18 @@ public class NPCMovement : MonoBehaviour, ISaveable
         npcMove = false;
     }
 
-
     /// <summary>
     /// 根据Schedule构建路径
     /// </summary>
     /// <param name="schedule"></param>
+    // note: 到点时调用，AStar构建寻路；主要是取schedule，然后构建movementSteps具体要走的步子
     public void BuildPath(ScheduleDetails schedule)
     {
         // note: 更新当前的Schedule，NPC准备干活去（走路）
         movementSteps.Clear();
         currentSchedule = schedule;
         targetScene = schedule.targetScene;
+        // note: 在这取的，从编辑器npc身上来的，girl1 girl2 老人分别可能有1-2个schedule
         tragetGridPosition = (Vector3Int)schedule.targetGridPosition;
         // note: 感觉这一段有问题，赋值过去又赋值回来
         stopAnimationClip = schedule.clipAtStop;
@@ -337,7 +353,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
                         gotoPos = path.gotoGridCell;
                     }
 
-                    // note: 会寻路2次
+                    // note: 会寻路2次；主要会给movementSteps填充sceneName和gridCoordinate
                     AStar.Instance.BuildPath(path.sceneName, fromPos, gotoPos, movementSteps);
                 }
             }
@@ -350,10 +366,10 @@ public class NPCMovement : MonoBehaviour, ISaveable
         }
     }
 
-
     /// <summary>
     /// 更新路径上每一步的时间
     /// </summary>
+    // note: 完善movementStep的细节，把每个步子应该走的时间填上
     private void UpdateTimeOnPath()
     {
         MovementStep previousSetp = null;
@@ -365,12 +381,14 @@ public class NPCMovement : MonoBehaviour, ISaveable
             if (previousSetp == null)
                 previousSetp = step;
 
+            // note: 给每一步MovementStep填充时间，这一步的时间是多少，下一步的时间又是多少
             step.hour = currentGameTime.Hours;
             step.minute = currentGameTime.Minutes;
             step.second = currentGameTime.Seconds;
 
             TimeSpan gridMovementStepTime;
 
+            // note: 还能斜着走？这看着只是把斜着走的时间做了特殊处理，时间*1.41
             if (MoveInDiagonal(step, previousSetp))
                 gridMovementStepTime = new TimeSpan(0, 0, (int)(Settings.gridCellDiagonalSize / normalSpeed / Settings.secondThreshold));
             else
@@ -405,11 +423,12 @@ public class NPCMovement : MonoBehaviour, ISaveable
         return new Vector3(worldPos.x + Settings.gridCellSize / 2f, worldPos.y + Settings.gridCellSize / 2);
     }
 
-
+    // note: 每帧都要控制npc朝向
     private void SwitchAnimation()
     {
         isMoving = transform.position != GetWorldPostion(tragetGridPosition);
 
+        // note: 控制walk或idle的动画
         anim.SetBool("isMoving", isMoving);
         if (isMoving)
         {
