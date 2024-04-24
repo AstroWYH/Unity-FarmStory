@@ -56,6 +56,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
     //动画计时器
     private float animationBreakTime;
     private bool canPlayStopAnimaiton;
+    // note: 目前看起来没起作用
     private AnimationClip stopAnimationClip;
     public AnimationClip blankAnimationClip;
     // note: 
@@ -207,7 +208,9 @@ public class NPCMovement : MonoBehaviour, ISaveable
         targetScene = currentScene;
 
         //保持在当前坐标的网格中心点
+        // note: 这俩值，转换前后都是-6, -10, 0
         currentGridPosition = gird.WorldToCell(transform.position);
+        // note: -5.50, -9.50, 0.00
         transform.position = new Vector3(currentGridPosition.x + Settings.gridCellSize / 2f, currentGridPosition.y + Settings.gridCellSize / 2f, 0);
 
         tragetGridPosition = currentGridPosition;
@@ -218,9 +221,9 @@ public class NPCMovement : MonoBehaviour, ISaveable
     /// </summary>
     private void Movement()
     {
-        if (!npcMove)
+        if (!npcMove) // note: 如果npc在移动，就什么都不做
         {
-            if (movementSteps.Count > 0)
+            if (movementSteps.Count > 0) // note: 如果有步子stack可以动，就移动
             {
                 MovementStep step = movementSteps.Pop();
 
@@ -233,13 +236,14 @@ public class NPCMovement : MonoBehaviour, ISaveable
 
                 MoveToGridPosition(nextGridPosition, stepTime);
             }
-            else if (!isMoving && canPlayStopAnimaiton)
+            else if (!isMoving && canPlayStopAnimaiton) // note: 如果没步子stack可以动，就停下来跳舞
             {
                 StartCoroutine(SetStopAnimation());
             }
         }
     }
 
+    // note: 因为移动耗时，又不能阻碍主线程，所以用协程
     private void MoveToGridPosition(Vector3Int gridPos, TimeSpan stepTime)
     {
         npcMoveRoutine = StartCoroutine(MoveRoutine(gridPos, stepTime));
@@ -292,6 +296,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
         currentSchedule = schedule;
         targetScene = schedule.targetScene;
         tragetGridPosition = (Vector3Int)schedule.targetGridPosition;
+        // note: 感觉这一段有问题，赋值过去又赋值回来
         stopAnimationClip = schedule.clipAtStop;
         this.interactable = schedule.interactable;
 
@@ -429,6 +434,7 @@ public class NPCMovement : MonoBehaviour, ISaveable
         {
             animOverride[blankAnimationClip] = stopAnimationClip;
             anim.SetBool("EventAnimation", true);
+            // note: gpt说这是设置了然后等下一帧生效，然后就可以关闭设置了
             yield return null;
             anim.SetBool("EventAnimation", false);
         }
